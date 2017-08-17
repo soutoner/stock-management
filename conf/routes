@@ -1,0 +1,6 @@
+POST    /product                    controllers.ProductController.create
+GET     /product/:id                controllers.ProductController.show(id: Int)
+POST    /product/:id/refill         controllers.ProductController.refill(id: Int)
+POST    /product/:id/buy            controllers.ProductController.buy(id: Int)
+POST    /product/:id/reserve        controllers.ProductController.reserve(id: Int)
+
