@@ -8,5 +8,3 @@ lazy val root = (project in file("."))
     scalaVersion := "2.12.3",
     libraryDependencies ++= backendDeps
   ).enablePlugins(PlayScala)
-
-mainClass in Compile := Some("com.rindus.Main")

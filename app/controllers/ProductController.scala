@@ -46,6 +46,16 @@ class ProductController @Inject()(productDao: ProductDao, cc: ControllerComponen
   }
 
   def reserve(id: Int) = Action {
-    Ok("Hello World")
+    val stockId = productDao.stockId(id)
+
+    if (stockId == 0) {
+      NotFound("Not enough stock")
+    } else {
+      if (productDao.reserve(stockId)) {
+        Ok(s"""Product id: $id successfully reserved. Your reservation identifier is: $stockId""")
+      } else {
+        Ok(s"""Error while reserving product id: $id""")
+      }
+    }
   }
 }

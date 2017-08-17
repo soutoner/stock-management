@@ -9,6 +9,8 @@ case class Product(id: Int, name: String, stock: Int, createdAt: LocalDateTime)
 
 object Product {
 
+  val ReservationDays = 2
+
   implicit val productWrites = Json.writes[Product]
 
   def parse(rs: ResultSet, stock: Int = 0): Product = {

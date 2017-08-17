@@ -1,6 +1,7 @@
 package daos
 
-import java.sql.{Connection, Statement}
+import java.sql.{Connection, Statement, Timestamp}
+import java.time.LocalDateTime
 
 import com.google.inject.Inject
 import play.api.db.Database
@@ -38,7 +39,6 @@ class ProductDao @Inject()(db: Database) {
       st.setInt(1, productId)
 
       val rs = st.executeQuery()
-
       if (rs.next()) {
         Some(Product.parse(rs, stock(productId)))
       } else {
@@ -78,11 +78,25 @@ class ProductDao @Inject()(db: Database) {
     }
   }
 
+  def reserve(stockId: Int): Boolean = {
+    val sql = "UPDATE stock SET reserved_until = ? WHERE id = ?"
+
+    db.withTransaction { conn =>
+      val st = conn.prepareStatement(sql)
+
+      st.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now().plusDays(Product.ReservationDays)))
+      st.setInt(2, stockId)
+
+      st.executeUpdate() != 0
+    }
+  }
+
   def stockId(productId: Int): Int = {
     val sql = "SELECT id " +
       "FROM stock " +
       "WHERE product_id = ? " +
       "AND id NOT IN (SELECT stock_id FROM sale) " +
+      "AND (reserved_until IS NULL OR reserved_until < CURRENT_TIMESTAMP) " +
       "ORDER BY id ASC " +
       "LIMIT 1"
 
@@ -106,7 +120,8 @@ class ProductDao @Inject()(db: Database) {
       "FROM stock " +
       "WHERE " +
       "product_id = ? " +
-      "AND id NOT IN (SELECT stock_id FROM sale)"
+      "AND id NOT IN (SELECT stock_id FROM sale) " +
+      "AND (reserved_until IS NULL OR reserved_until < CURRENT_TIMESTAMP)"
 
     val st = conn.prepareStatement(sql)
 
